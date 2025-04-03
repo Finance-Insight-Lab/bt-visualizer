@@ -13,7 +13,7 @@ interface TradeMarker {
   marker: {
     size: number;
     fillColor: string;
-    shape: "triangle";
+    shape: string;
   };
 }
 
@@ -34,11 +34,22 @@ const CandlestickChart: React.FC = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result) => {
-        const parsedData = result.data as { Open: string; High: string; Low: string; Close: string; Datetime: string }[];
+        const parsedData = result.data as {
+          Open: string;
+          High: string;
+          Low: string;
+          Close: string;
+          Datetime: string;
+        }[];
 
         const formattedData: CandlestickData[] = parsedData.map((row) => ({
           x: parseDatetime(row.Datetime),
-          y: [parseFloat(row.Open), parseFloat(row.High), parseFloat(row.Low), parseFloat(row.Close)],
+          y: [
+            parseFloat(row.Open),
+            parseFloat(row.High),
+            parseFloat(row.Low),
+            parseFloat(row.Close),
+          ],
         }));
 
         setOhlcData(formattedData);
@@ -53,18 +64,36 @@ const CandlestickChart: React.FC = () => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (result) => {
-        const parsedTrades = result.data as { Datetime: string; Type: string; Price: string }[];
+      complete: (result: any) => {
+        const parsedTrades = result.data as {
+          EntryTime: string;
+          ExitTime: string;
+          EntryPrice: string;
+          ExitPrice: string;
+          Type: string;
+        }[];
 
-        const tradeAnnotations = parsedTrades.map((trade) => ({
-          x: parseDatetime(trade.Datetime),
-          y: parseFloat(trade.Price),
+        const entryAnnotations = parsedTrades.map((trade) => ({
+          x: parseDatetime(trade.EntryTime),
+          y: parseFloat(trade.EntryPrice),
           marker: {
             size: 9,
             fillColor: trade.Type === "B" ? "green" : "red",
-            shape: "square",
+            shape: "sparkle",
           },
         }));
+        
+        const exitAnnotations = parsedTrades.map((trade) => ({
+          x: parseDatetime(trade.ExitTime),
+          y: parseFloat(trade.ExitPrice),
+          marker: {
+            size: 9,
+            fillColor: trade.Type === "B" ? "green" : "red",
+            shape: "diamond",
+          },
+        }));
+
+        const tradeAnnotations = [...entryAnnotations, ...exitAnnotations];
 
         setAnnotations(tradeAnnotations);
       },
@@ -90,13 +119,24 @@ const CandlestickChart: React.FC = () => {
   return (
     <div>
       <h2>Upload Files</h2>
-      <input type="file" accept=".csv" onChange={handleOHLCUpload} />
-      <input type="file" accept=".csv" onChange={handleTradesUpload} style={{ marginLeft: "10px" }} />
+      <input
+        type="file"
+        accept=".csv"
+        onChange={handleOHLCUpload}
+      />
+      <input
+        type="file"
+        accept=".csv"
+        onChange={handleTradesUpload}
+        style={{ marginLeft: "10px" }}
+      />
 
       {ohlcData.length > 0 && (
         <Chart
           options={options}
-          series={[{ name: "Candlestick", type: "candlestick", data: ohlcData }]}
+          series={[
+            { name: "Candlestick", type: "candlestick", data: ohlcData },
+          ]}
           type="candlestick"
           height={400}
         />
