@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Chart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
 import Papa from "papaparse";
 
 interface CandlestickData {
@@ -17,9 +18,19 @@ interface TradeMarker {
   };
 }
 
+interface TradeLine {
+  name: string;
+  data:{
+      x: number;
+      y: number;
+    }[];
+  type: string;
+}
+
 const CandlestickChart: React.FC = () => {
   const [ohlcData, setOhlcData] = useState<CandlestickData[]>([]);
   const [annotations, setAnnotations] = useState<TradeMarker[]>([]);
+  const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
 
   const parseDatetime = (datetime: string): number => {
     const localDate = new Date(datetime);
@@ -66,6 +77,7 @@ const CandlestickChart: React.FC = () => {
       skipEmptyLines: true,
       complete: (result: any) => {
         const parsedTrades = result.data as {
+          Id: number;
           EntryTime: string;
           ExitTime: string;
           EntryPrice: string;
@@ -73,11 +85,26 @@ const CandlestickChart: React.FC = () => {
           Type: string;
         }[];
 
+        const allTradeLines = parsedTrades.map((trade) => ({
+          data: [
+            {
+              x: parseDatetime(trade.EntryTime),
+              y: parseFloat(trade.EntryPrice),
+            },
+            {
+              x: parseDatetime(trade.ExitTime),
+              y: parseFloat(trade.ExitPrice),
+            },
+          ],
+          name: `trade-${trade.Id}`,
+          type: "line",
+        }));
+
         const entryAnnotations = parsedTrades.map((trade) => ({
           x: parseDatetime(trade.EntryTime),
           y: parseFloat(trade.EntryPrice),
           marker: {
-            size: 9,
+            size: 5,
             fillColor: trade.Type === "B" ? "green" : "red",
             shape: "sparkle",
           },
@@ -87,14 +114,15 @@ const CandlestickChart: React.FC = () => {
           x: parseDatetime(trade.ExitTime),
           y: parseFloat(trade.ExitPrice),
           marker: {
-            size: 9,
+            size: 5,
             fillColor: trade.Type === "B" ? "green" : "red",
             shape: "diamond",
           },
         }));
 
-        const tradeAnnotations = [...entryAnnotations, ...exitAnnotations];
+        setTradeLines(allTradeLines)
 
+        const tradeAnnotations = [...entryAnnotations, ...exitAnnotations];
         setAnnotations(tradeAnnotations);
       },
     });
@@ -105,6 +133,9 @@ const CandlestickChart: React.FC = () => {
       type: "candlestick",
       height: 400,
     },
+    title: {
+      align: "left",
+    },
     xaxis: {
       type: "datetime",
       labels: {
@@ -113,6 +144,16 @@ const CandlestickChart: React.FC = () => {
     },
     annotations: {
       points: annotations,
+    },
+    stroke: {
+      curve: "straight",
+      width: [1, ...tradeLines.map(() => 3)],
+    },
+    colors: ["#008FFB", ...tradeLines.map(() => "#FF4560")],
+    yaxis: {
+      tooltip: {
+        enabled: true,
+      },
     },
   };
 
@@ -136,6 +177,7 @@ const CandlestickChart: React.FC = () => {
           options={options}
           series={[
             { name: "Candlestick", type: "candlestick", data: ohlcData },
+            ...tradeLines,
           ]}
           type="candlestick"
           height={400}
