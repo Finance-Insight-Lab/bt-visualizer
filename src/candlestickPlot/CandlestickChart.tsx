@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Chart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
+import { createChart } from "lightweight-charts";
+import { Chart, CandlestickSeries, LineSeries } from "react-lightweight-charts";
 import Papa from "papaparse";
 
 interface CandlestickData {
@@ -44,7 +44,7 @@ const CandlestickChart: React.FC = () => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (result) => {
+      complete: (result: any) => {
         const parsedData = result.data as {
           Open: string;
           High: string;
