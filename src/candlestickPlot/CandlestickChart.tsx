@@ -1,40 +1,56 @@
-import React, { useState } from "react";
-import { createChart } from "lightweight-charts";
-import { Chart, CandlestickSeries, LineSeries } from "react-lightweight-charts";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  createChart,
+  CandlestickSeries,
+  createSeriesMarkers,
+  LineSeries,
+  IChartApi,
+  UTCTimestamp,
+} from "lightweight-charts";
 import Papa from "papaparse";
 
 interface CandlestickData {
-  x: number;
-  y: [number, number, number, number];
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  time: UTCTimestamp;
+}
+
+interface CandlestickDataRaw {
+  open: string;
+  high: string;
+  low: string;
+  close: string;
+  time: string;
 }
 
 interface TradeMarker {
-  x: number;
-  y: number;
-  marker: {
-    size: number;
-    fillColor: string;
-    shape: string;
-  };
+  time: UTCTimestamp;
+  color: string;
+  position: string;
+  shape: string;
 }
 
 interface TradeLine {
-  name: string;
-  data:{
-      x: number;
-      y: number;
-    }[];
-  type: string;
+  data: {
+    time: UTCTimestamp;
+    value: number;
+  }[];
+  color: string;
+  dashed: boolean;
 }
 
-const CandlestickChart: React.FC = () => {
-  const [ohlcData, setOhlcData] = useState<CandlestickData[]>([]);
+const CandlestickChart = () => {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const chartApiRef = useRef<IChartApi>();
+  const [data, setData] = useState<CandlestickData[]>([]);
   const [annotations, setAnnotations] = useState<TradeMarker[]>([]);
   const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
 
-  const parseDatetime = (datetime: string): number => {
+  const parseDatetime = (datetime: string): UTCTimestamp => {
     const localDate = new Date(datetime);
-    return localDate.getTime();
+    return (localDate.getTime() / 1000) as UTCTimestamp;
   };
 
   const handleOHLCUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,25 +61,17 @@ const CandlestickChart: React.FC = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result: any) => {
-        const parsedData = result.data as {
-          Open: string;
-          High: string;
-          Low: string;
-          Close: string;
-          Datetime: string;
-        }[];
+        const parsedData = result.data as CandlestickDataRaw[];
 
         const formattedData: CandlestickData[] = parsedData.map((row) => ({
-          x: parseDatetime(row.Datetime),
-          y: [
-            parseFloat(row.Open),
-            parseFloat(row.High),
-            parseFloat(row.Low),
-            parseFloat(row.Close),
-          ],
+          time: parseDatetime(row.time),
+          open: parseFloat(row.open),
+          high: parseFloat(row.high),
+          low: parseFloat(row.low),
+          close: parseFloat(row.close),
         }));
 
-        setOhlcData(formattedData);
+        setData(formattedData);
       },
     });
   };
@@ -88,83 +96,96 @@ const CandlestickChart: React.FC = () => {
         const allTradeLines = parsedTrades.map((trade) => ({
           data: [
             {
-              x: parseDatetime(trade.EntryTime),
-              y: parseFloat(trade.EntryPrice),
+              time: parseDatetime(trade.EntryTime),
+              value: parseFloat(trade.EntryPrice),
             },
             {
-              x: parseDatetime(trade.ExitTime),
-              y: parseFloat(trade.ExitPrice),
+              time: parseDatetime(trade.ExitTime),
+              value: parseFloat(trade.ExitPrice),
             },
           ],
-          name: `trade-${trade.Id}`,
-          type: "line",
+          color: trade.Type === "B" ? "green" : "red",
+          dashed: true,
         }));
 
         const entryAnnotations = parsedTrades.map((trade) => ({
-          x: parseDatetime(trade.EntryTime),
-          y: parseFloat(trade.EntryPrice),
-          marker: {
-            size: 5,
-            fillColor: trade.Type === "B" ? "green" : "red",
-            shape: "sparkle",
-          },
-        }));
-        
-        const exitAnnotations = parsedTrades.map((trade) => ({
-          x: parseDatetime(trade.ExitTime),
-          y: parseFloat(trade.ExitPrice),
-          marker: {
-            size: 5,
-            fillColor: trade.Type === "B" ? "green" : "red",
-            shape: "diamond",
-          },
+          time: parseDatetime(trade.EntryTime),
+          color: trade.Type === "B" ? "green" : "red",
+          position: trade.Type === "B" ? "belowBar" : "aboveBar",
+          shape: trade.Type === "B" ? "arrowUp" : "arrowDown",
         }));
 
-        setTradeLines(allTradeLines)
-
-        const tradeAnnotations = [...entryAnnotations, ...exitAnnotations];
-        setAnnotations(tradeAnnotations);
+        setTradeLines(allTradeLines);
+        setAnnotations(entryAnnotations);
       },
     });
   };
 
-  const options = {
-    chart: {
-      type: "candlestick",
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    const chart = createChart(chartRef.current, {
+      width: chartRef.current.clientWidth,
       height: 400,
-    },
-    title: {
-      align: "left",
-    },
-    xaxis: {
-      type: "datetime",
-      labels: {
-        format: "dd MMM HH:mm",
-      },
-    },
-    annotations: {
-      points: annotations,
-    },
-    stroke: {
-      curve: "straight",
-      width: [1, ...tradeLines.map(() => 3)],
-    },
-    colors: ["#008FFB", ...tradeLines.map(() => "#FF4560")],
-    yaxis: {
-      tooltip: {
-        enabled: true,
-      },
-    },
-  };
+    });
+
+    chartApiRef.current = chart;
+
+    const candleSeries = chart.addSeries(CandlestickSeries, {
+      upColor: "#4caf50",
+      downColor: "#f44336",
+      borderVisible: false,
+      wickUpColor: "#4caf50",
+      wickDownColor: "#f44336",
+    });
+    candleSeries.setData(data);
+
+    const drawLine = (
+      data: { time: UTCTimestamp; value: number }[],
+      color = "blue",
+      dashed = false
+    ) => {
+      const series = chart.addSeries(LineSeries, {
+        color,
+        lineWidth: 2,
+        lineStyle: dashed ? 2 : 0, // 0 solid, 1 dotted, 2 dashed
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+      series.setData(data);
+    };
+
+    tradeLines.forEach(({ data, color, dashed }) => {
+      drawLine(data, color, dashed);
+    });
+
+    const drawTradeArrow = (
+      time: UTCTimestamp,
+      color: string = "blue",
+      position = "aboveBar",
+      shape = "arrowDown"
+    ) => {
+      const seriesMarkers = createSeriesMarkers(candleSeries, [
+        {
+          color: color,
+          position: position,
+          shape: shape,
+          time: time,
+        },
+      ]);
+    };
+
+    annotations.forEach(({ time, color, position, shape }) => {
+      drawTradeArrow(time, color, position, shape);
+    });
+
+    return () => chart.remove();
+  }, [data, tradeLines]);
 
   return (
-    <div>
+    <>
       <h2>Upload Files</h2>
-      <input
-        type="file"
-        accept=".csv"
-        onChange={handleOHLCUpload}
-      />
+      <input type="file" accept=".csv" onChange={handleOHLCUpload} />
       <input
         type="file"
         accept=".csv"
@@ -172,18 +193,8 @@ const CandlestickChart: React.FC = () => {
         style={{ marginLeft: "10px" }}
       />
 
-      {ohlcData.length > 0 && (
-        <Chart
-          options={options}
-          series={[
-            { name: "Candlestick", type: "candlestick", data: ohlcData },
-            ...tradeLines,
-          ]}
-          type="candlestick"
-          height={400}
-        />
-      )}
-    </div>
+      <div ref={chartRef} style={{ width: "100%", height: "400px" }} />
+    </>
   );
 };
 
