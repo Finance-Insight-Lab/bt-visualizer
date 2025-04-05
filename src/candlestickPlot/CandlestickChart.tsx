@@ -47,6 +47,7 @@ const CandlestickChart = () => {
   const [data, setData] = useState<CandlestickData[]>([]);
   const [annotations, setAnnotations] = useState<TradeMarker[]>([]);
   const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
+  const [width, setWidth] = useState(window.innerWidth);
 
   const parseDatetime = (datetime: string): UTCTimestamp => {
     const localDate = new Date(datetime);
@@ -122,12 +123,30 @@ const CandlestickChart = () => {
   };
 
   useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+
+  useEffect(() => {
     if (!chartRef.current) return;
 
+    const handleResize = () => {
+      chart.applyOptions({ width: chartRef.current?.clientWidth });
+    };
+
     const chart = createChart(chartRef.current, {
-      width: chartRef.current.clientWidth,
+      width: width,
       height: 400,
+      autoSize: true,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: true,
+        minBarSpacing: 0,
+      },
     });
+    chart.timeScale().fitContent();
 
     chartApiRef.current = chart;
 
@@ -137,6 +156,12 @@ const CandlestickChart = () => {
       borderVisible: false,
       wickUpColor: "#4caf50",
       wickDownColor: "#f44336",
+      priceLineVisible: false,
+      lastValueVisible: false,
+      priceFormat: {
+        type: 'price',
+        precision: 5,
+      },    
     });
     candleSeries.setData(data);
 
@@ -159,27 +184,16 @@ const CandlestickChart = () => {
       drawLine(data, color, dashed);
     });
 
-    const drawTradeArrow = (
-      time: UTCTimestamp,
-      color: string = "blue",
-      position = "aboveBar",
-      shape = "arrowDown"
-    ) => {
-      const seriesMarkers = createSeriesMarkers(candleSeries, [
-        {
-          color: color,
-          position: position,
-          shape: shape,
-          time: time,
-        },
-      ]);
-    };
+    createSeriesMarkers(candleSeries, annotations)
+  
+    window.addEventListener('resize', handleResize);
 
-    annotations.forEach(({ time, color, position, shape }) => {
-      drawTradeArrow(time, color, position, shape);
-    });
+    return () => {
+      window.removeEventListener('resize', handleResize);
 
-    return () => chart.remove();
+      chart.remove();
+  };
+
   }, [data, tradeLines]);
 
   return (
@@ -193,7 +207,7 @@ const CandlestickChart = () => {
         style={{ marginLeft: "10px" }}
       />
 
-      <div ref={chartRef} style={{ width: "100%", height: "400px" }} />
+      <div ref={chartRef} style={{ width: "100%", height: "400px", marginTop: "20px" }} />
     </>
   );
 };
