@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   createChart,
-  CandlestickSeries,
   createSeriesMarkers,
   LineSeries,
   IChartApi,
@@ -9,19 +8,13 @@ import {
 } from "lightweight-charts";
 import Papa from "papaparse";
 
-interface CandlestickData {
-  open: number;
-  high: number;
-  low: number;
-  close: number;
+interface EquityData {
   time: UTCTimestamp;
+  value: number;
 }
 
-interface CandlestickDataRaw {
-  open: string;
-  high: string;
-  low: string;
-  close: string;
+interface EquityDataRaw {
+  equity: string;
   time: string;
 }
 
@@ -41,10 +34,10 @@ interface TradeLine {
   dashed: boolean;
 }
 
-const CandlestickChart = () => {
+const EquityChart = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartApiRef = useRef<IChartApi>();
-  const [data, setData] = useState<CandlestickData[]>([]);
+  const [data, setData] = useState<EquityData[]>([]);
   const [annotations, setAnnotations] = useState<TradeMarker[]>([]);
   const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
   const [width, setWidth] = useState(window.innerWidth);
@@ -54,7 +47,7 @@ const CandlestickChart = () => {
     return (localDate.getTime() / 1000) as UTCTimestamp;
   };
 
-  const handleOHLCUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEquityUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -62,14 +55,11 @@ const CandlestickChart = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result: any) => {
-        const parsedData = result.data as CandlestickDataRaw[];
+        const parsedData = result.data as EquityDataRaw[];
 
-        const formattedData: CandlestickData[] = parsedData.map((row) => ({
+        const formattedData: EquityData[] = parsedData.map((row) => ({
           time: parseDatetime(row.time),
-          open: parseFloat(row.open),
-          high: parseFloat(row.high),
-          low: parseFloat(row.low),
-          close: parseFloat(row.close),
+          value: parseFloat(row.equity),
         }));
 
         setData(formattedData);
@@ -77,7 +67,7 @@ const CandlestickChart = () => {
     });
   };
 
-  const handleTradesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStatsUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -137,7 +127,7 @@ const CandlestickChart = () => {
 
     const chart = createChart(chartRef.current, {
       width: width,
-      height: 500,
+      height: 200,
       autoSize: true,
       timeScale: {
         timeVisible: true,
@@ -149,41 +139,18 @@ const CandlestickChart = () => {
 
     chartApiRef.current = chart;
 
-    const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#4caf50",
-      downColor: "#f44336",
-      borderVisible: false,
-      wickUpColor: "#4caf50",
-      wickDownColor: "#f44336",
-      priceLineVisible: false,
+    const series = chart.addSeries(LineSeries, {
+      color: 'blue',
+      lineWidth: 2,
+      lineStyle: 0,
       lastValueVisible: false,
+      priceLineVisible: false,
       priceFormat: {
         type: "price",
-        precision: 5,
+        precision: 2,
       },
     });
-    candleSeries.setData(data);
-
-    const drawLine = (
-      data: { time: UTCTimestamp; value: number }[],
-      color = "blue",
-      dashed = false
-    ) => {
-      const series = chart.addSeries(LineSeries, {
-        color,
-        lineWidth: 2,
-        lineStyle: dashed ? 2 : 0, // 0 solid, 1 dotted, 2 dashed
-        lastValueVisible: false,
-        priceLineVisible: false,
-      });
-      series.setData(data);
-    };
-
-    tradeLines.forEach(({ data, color, dashed }) => {
-      drawLine(data, color, dashed);
-    });
-
-    createSeriesMarkers(candleSeries, annotations);
+    series.setData(data);
 
     window.addEventListener("resize", handleResize);
 
@@ -196,49 +163,48 @@ const CandlestickChart = () => {
 
   return (
     <>
-      <div style={{ marginTop: "10px" }}>
-        <label
-          style={{
-            cursor: "pointer",
-            color: "black",
-            background: "#D3D3D3",
-            padding: "8px 12px",
-            borderRadius: "4px",
-          }}
-        >
-          Upload OHLC CSV
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleOHLCUpload}
-            style={{ display: "none" }}
-          />
-        </label>
-        <label
-          style={{
-            cursor: "pointer",
-            color: "black",
-            background: "#D3D3D3",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            marginLeft: "10px",
-          }}
-        >
-          Upload Trades CSV
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleTradesUpload}
-            style={{ marginLeft: "10px", display: "none" }}
-          />
-        </label>
-      </div>
+      <label
+        style={{
+          cursor: "pointer",
+          color: "black",
+          background: "#D3D3D3",
+          padding: "8px 12px",
+          borderRadius: "4px",
+        }}
+      >
+        Upload Equity CSV
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleEquityUpload}
+          style={{ display: "none" }}
+        />
+      </label>
+      <label
+        style={{
+          cursor: "pointer",
+          color: "black",
+          background: "#D3D3D3",
+          padding: "8px 12px",
+          borderRadius: "4px",
+          marginLeft: "10px",
+        }}
+      >
+        Upload Stats CSV
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleStatsUpload}
+          style={{ marginLeft: "10px", display: "none" }}
+        />
+      </label>
+
       <div
         ref={chartRef}
-        style={{ width: "100%", height: "500px", marginTop: "20px" }}
+        style={{ width: "100%", height: "200px", marginTop: "20px" }}
       />
     </>
   );
 };
 
-export default CandlestickChart;
+export default EquityChart;
