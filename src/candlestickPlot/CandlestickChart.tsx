@@ -128,7 +128,6 @@ const CandlestickChart = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
   useEffect(() => {
     if (!chartRef.current) return;
 
@@ -138,7 +137,7 @@ const CandlestickChart = () => {
 
     const chart = createChart(chartRef.current, {
       width: width,
-      height: 400,
+      height: 500,
       autoSize: true,
       timeScale: {
         timeVisible: true,
@@ -159,9 +158,9 @@ const CandlestickChart = () => {
       priceLineVisible: false,
       lastValueVisible: false,
       priceFormat: {
-        type: 'price',
+        type: "price",
         precision: 5,
-      },    
+      },
     });
     candleSeries.setData(data);
 
@@ -184,30 +183,59 @@ const CandlestickChart = () => {
       drawLine(data, color, dashed);
     });
 
-    createSeriesMarkers(candleSeries, annotations)
-  
-    window.addEventListener('resize', handleResize);
+    createSeriesMarkers(candleSeries, annotations);
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
 
       chart.remove();
-  };
-
+    };
   }, [data, tradeLines]);
 
   return (
     <>
-      <h2>Upload Files</h2>
-      <input type="file" accept=".csv" onChange={handleOHLCUpload} />
-      <input
-        type="file"
-        accept=".csv"
-        onChange={handleTradesUpload}
-        style={{ marginLeft: "10px" }}
-      />
+      <label
+        style={{
+          cursor: "pointer",
+          color: "black",
+          background: "#D3D3D3",
+          padding: "8px 12px",
+          borderRadius: "4px",
+        }}
+      >
+        Upload OHLC CSV
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleOHLCUpload}
+          style={{ display: "none" }}
+        />
+      </label>
+      <label
+        style={{
+          cursor: "pointer",
+          color: "black",
+          background: "#D3D3D3",
+          padding: "8px 12px",
+          borderRadius: "4px",
+          marginLeft: "10px",
+        }}
+      >
+        Upload Trades CSV
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleTradesUpload}
+          style={{ marginLeft: "10px", display: "none" }}
+        />
+      </label>
 
-      <div ref={chartRef} style={{ width: "100%", height: "400px", marginTop: "20px" }} />
+      <div
+        ref={chartRef}
+        style={{ width: "100%", height: "500px", marginTop: "20px" }}
+      />
     </>
   );
 };
