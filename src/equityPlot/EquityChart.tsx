@@ -7,6 +7,8 @@ import {
   UTCTimestamp,
 } from "lightweight-charts";
 import Papa from "papaparse";
+import TradeStatsCard from "./statsCard";
+import { TradeStats } from "./tradeStats";
 
 interface EquityData {
   time: UTCTimestamp;
@@ -18,28 +20,11 @@ interface EquityDataRaw {
   time: string;
 }
 
-interface TradeMarker {
-  time: UTCTimestamp;
-  color: string;
-  position: string;
-  shape: string;
-}
-
-interface TradeLine {
-  data: {
-    time: UTCTimestamp;
-    value: number;
-  }[];
-  color: string;
-  dashed: boolean;
-}
-
 const EquityChart = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartApiRef = useRef<IChartApi>();
-  const [data, setData] = useState<EquityData[]>([]);
-  const [annotations, setAnnotations] = useState<TradeMarker[]>([]);
-  const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
+  const [equityCurve, setEquityCurve] = useState<EquityData[]>([]);
+  const [stats, setStats] = useState<TradeStats>();
   const [width, setWidth] = useState(window.innerWidth);
 
   const parseDatetime = (datetime: string): UTCTimestamp => {
@@ -62,9 +47,17 @@ const EquityChart = () => {
           value: parseFloat(row.equity),
         }));
 
-        setData(formattedData);
+        setEquityCurve(formattedData);
       },
     });
+  };
+
+  const sanitizeKey = (key: string): string => {
+    return key
+      .trim()
+      .replace(/\s+/g, "") // Remove spaces
+      .replace(/[%().]/g, "") // Remove % ( ) . characters
+      .replace(/[^a-zA-Z0-9_]/g, ""); // Remove any other non-alphanum/underscore
   };
 
   const handleStatsUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,42 +65,18 @@ const EquityChart = () => {
     if (!file) return;
 
     Papa.parse(file, {
-      header: true,
       skipEmptyLines: true,
-      complete: (result: any) => {
-        const parsedTrades = result.data as {
-          Id: number;
-          EntryTime: string;
-          ExitTime: string;
-          EntryPrice: string;
-          ExitPrice: string;
-          Type: string;
-        }[];
+      complete: (results: any) => {
+        const raw_data = results.data as string[][];
+        const parsed: any = {};
 
-        const allTradeLines = parsedTrades.map((trade) => ({
-          data: [
-            {
-              time: parseDatetime(trade.EntryTime),
-              value: parseFloat(trade.EntryPrice),
-            },
-            {
-              time: parseDatetime(trade.ExitTime),
-              value: parseFloat(trade.ExitPrice),
-            },
-          ],
-          color: trade.Type === "B" ? "green" : "red",
-          dashed: true,
-        }));
+        raw_data.forEach(([key, value]) => {
+          if (key && value) {
+            parsed[sanitizeKey(key)] = value.trim();
+          }
+        });
 
-        const entryAnnotations = parsedTrades.map((trade) => ({
-          time: parseDatetime(trade.EntryTime),
-          color: trade.Type === "B" ? "green" : "red",
-          position: trade.Type === "B" ? "belowBar" : "aboveBar",
-          shape: trade.Type === "B" ? "arrowUp" : "arrowDown",
-        }));
-
-        setTradeLines(allTradeLines);
-        setAnnotations(entryAnnotations);
+        setStats(parsed);
       },
     });
   };
@@ -140,7 +109,7 @@ const EquityChart = () => {
     chartApiRef.current = chart;
 
     const series = chart.addSeries(LineSeries, {
-      color: 'blue',
+      color: "blue",
       lineWidth: 2,
       lineStyle: 0,
       lastValueVisible: false,
@@ -150,7 +119,7 @@ const EquityChart = () => {
         precision: 2,
       },
     });
-    series.setData(data);
+    series.setData(equityCurve);
 
     window.addEventListener("resize", handleResize);
 
@@ -159,10 +128,11 @@ const EquityChart = () => {
 
       chart.remove();
     };
-  }, [data, tradeLines]);
+  }, [equityCurve, stats]);
 
   return (
     <>
+      <TradeStatsCard stats={stats} />
       <label
         style={{
           cursor: "pointer",
