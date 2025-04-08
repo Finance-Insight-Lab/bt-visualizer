@@ -196,40 +196,25 @@ const CandlestickChart = () => {
 
   return (
     <>
-      <div style={{ marginTop: "10px" }}>
-        <label
-          style={{
-            cursor: "pointer",
-            color: "black",
-            background: "#D3D3D3",
-            padding: "8px 12px",
-            borderRadius: "4px",
-          }}
-        >
+
+      <div className="flex justify-center items-center gap-4 flex-wrap">
+        <label className="cursor-pointer text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
           Upload OHLC CSV
           <input
             type="file"
             accept=".csv"
             onChange={handleOHLCUpload}
-            style={{ display: "none" }}
+            className="hidden"
           />
         </label>
-        <label
-          style={{
-            cursor: "pointer",
-            color: "black",
-            background: "#D3D3D3",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            marginLeft: "10px",
-          }}
-        >
+
+        <label className="cursor-pointer text-sm font-medium text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
           Upload Trades CSV
           <input
             type="file"
             accept=".csv"
             onChange={handleTradesUpload}
-            style={{ marginLeft: "10px", display: "none" }}
+            className="hidden"
           />
         </label>
       </div>

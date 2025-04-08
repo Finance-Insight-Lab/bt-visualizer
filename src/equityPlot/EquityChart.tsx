@@ -132,42 +132,28 @@ const EquityChart = () => {
 
   return (
     <>
-      <TradeStatsCard stats={stats} />
-      <label
-        style={{
-          cursor: "pointer",
-          color: "black",
-          background: "#D3D3D3",
-          padding: "8px 12px",
-          borderRadius: "4px",
-        }}
-      >
-        Upload Equity CSV
-        <input
-          type="file"
-          accept=".csv"
-          onChange={handleEquityUpload}
-          style={{ display: "none" }}
-        />
-      </label>
-      <label
-        style={{
-          cursor: "pointer",
-          color: "black",
-          background: "#D3D3D3",
-          padding: "8px 12px",
-          borderRadius: "4px",
-          marginLeft: "10px",
-        }}
-      >
-        Upload Stats CSV
-        <input
-          type="file"
-          accept=".csv"
-          onChange={handleStatsUpload}
-          style={{ marginLeft: "10px", display: "none" }}
-        />
-      </label>
+      <div className="flex justify-center items-center gap-4 flex-wrap framer-motion">
+        <label className="cursor-pointer text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Upload Equity CSV
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleEquityUpload}
+            className="hidden"
+          />
+        </label>
+
+        <label className="cursor-pointer text-sm font-medium text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Upload Stats CSV
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleStatsUpload}
+            className="hidden"
+          />
+        </label>
+        <TradeStatsCard stats={stats} />
+      </div>
 
       <div
         ref={chartRef}
