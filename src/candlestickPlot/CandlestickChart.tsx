@@ -114,6 +114,7 @@ const CandlestickChart = () => {
           color: trade.Type === "B" ? "green" : "red",
           position: trade.Type === "B" ? "belowBar" : "aboveBar",
           shape: trade.Type === "B" ? "arrowUp" : "arrowDown",
+          text: "trade info",
         }));
 
         setTradeLines(allTradeLines);
@@ -160,6 +161,7 @@ const CandlestickChart = () => {
       priceFormat: {
         type: "price",
         precision: 5,
+        minMove: 0.00001,
       },
     });
     candleSeries.setData(data);
