@@ -108,6 +108,11 @@ const EquityChart = () => {
     });
     chart.timeScale().fitContent();
 
+    chart.subscribeDblClick(param => {
+      if (!param || !param.time) return;
+      chart.timeScale().fitContent();
+    });
+
     chartApiRef.current = chart;
 
     const series = chart.addSeries(LineSeries, {
@@ -151,13 +156,6 @@ const EquityChart = () => {
             type="file"
             accept=".csv"
             onChange={handleStatsUpload}
-            className="hidden"
-          />
-        </label>
-        <label className="cursor-pointer text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
-          Reset Zoom 🔍
-          <button
-            onClick={() => chartApiRef.current?.timeScale().fitContent()}
             className="hidden"
           />
         </label>

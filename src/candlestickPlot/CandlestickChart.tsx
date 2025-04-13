@@ -332,6 +332,11 @@ const CandlestickChart = () => {
       }
     });
 
+    chart.subscribeDblClick(param => {
+      if (!param || !param.time) return;
+      chart.timeScale().fitContent();
+    });
+
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -361,13 +366,6 @@ const CandlestickChart = () => {
             type="file"
             accept=".csv"
             onChange={handleTradesUpload}
-            className="hidden"
-          />
-        </label>
-        <label className="cursor-pointer text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
-          Reset Zoom 🔍
-          <button
-            onClick={() => chartApiRef.current?.timeScale().fitContent()}
             className="hidden"
           />
         </label>
