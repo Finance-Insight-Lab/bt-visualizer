@@ -25,12 +25,17 @@ interface CandlestickDataRaw {
   time: string;
 }
 
+type markerPosition = "belowBar" | "aboveBar";
+type markerShape = "arrowUp" | "arrowDown"
+
 interface TradeMarker {
   time: UTCTimestamp;
+  price: number;
+  exitTime: UTCTimestamp;
   color: string;
-  position: string;
-  shape: string;
-  tradeId: number;
+  position: markerPosition;
+  shape: markerShape;
+  id: string;
   tradeType: string;
   entryPrice: string;
   exitPrice: string;
@@ -52,7 +57,7 @@ interface TradeLine {
 
 const CandlestickChart = () => {
   const chartRef = useRef<HTMLDivElement>(null);
-  const chartApiRef = useRef<IChartApi>();
+  const chartApiRef = useRef<IChartApi>(null);
   const [data, setData] = useState<CandlestickData[]>([]);
   const [annotations, setAnnotations] = useState<TradeMarker[]>([]);
   const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
@@ -95,7 +100,7 @@ const CandlestickChart = () => {
       skipEmptyLines: true,
       complete: (result: any) => {
         const parsedTrades = result.data as {
-          Id: number;
+          Id: string;
           EntryTime: string;
           ExitTime: string;
           EntryPrice: string;
@@ -125,10 +130,13 @@ const CandlestickChart = () => {
 
         const entryAnnotations = parsedTrades.map((trade) => ({
           time: parseDatetime(trade.EntryTime),
+          price: parseFloat(trade.EntryPrice),
+          exitTime: parseDatetime(trade.ExitTime),
+          size: 1.5,
           color: trade.Type === "B" ? "green" : "red",
-          position: trade.Type === "B" ? "belowBar" : "aboveBar",
-          shape: trade.Type === "B" ? "arrowUp" : "arrowDown",
-          tradeId: trade.Id,
+          position: trade.Type === "B" ? "belowBar" : "aboveBar" as markerPosition,
+          shape: trade.Type === "B" ? "arrowUp" : "arrowDown" as markerShape,
+          id: trade.Id,
           entryPrice: trade.EntryPrice,
           exitPrice: trade.ExitPrice,
           tradeType: trade.Type === "B" ? "Buy" : "Sell",
@@ -185,7 +193,7 @@ const CandlestickChart = () => {
   
     tooltip.innerHTML = `
       <strong>${trade.tradeType.toUpperCase()}</strong><br/>
-      ID: ${trade.tradeId}<br/>
+      ID: ${trade.id}<br/>
       Entry Price: ${trade.entryPrice}<br/>
       Exit Price: ${trade.exitPrice}<br/>
       Size: ${trade.Size}<br/>
@@ -201,7 +209,33 @@ const CandlestickChart = () => {
     if (tooltip) {
       tooltip.style.display = "none";
     }
-  };  
+  };
+
+  const zoomAroundTrade = (
+    chart: IChartApi,
+    data: CandlestickData[],
+    trade: TradeMarker
+  ) => {
+    const entryIndex = data.findIndex((c) => c.time === trade.time);
+    let fromTime = trade.time;
+    if (entryIndex !== -1){
+      const fromIndex = Math.max(0, entryIndex - 10);
+      fromTime = data[fromIndex].time;
+    }
+
+    const exitIndex = data.findIndex((c) => c.time === trade.exitTime);
+    let toTime = trade.exitTime;
+    if (exitIndex !== -1){
+      const exit = exitIndex !== -1 ? exitIndex : entryIndex + 10;
+      const toIndex = Math.min(data.length - 1, exit + 10);
+      toTime = data[toIndex].time;
+    }
+
+    chart.timeScale().setVisibleRange({
+      from: fromTime,
+      to: toTime,
+    });
+  };
 
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
@@ -254,7 +288,7 @@ const CandlestickChart = () => {
     ) => {
       const series = chart.addSeries(LineSeries, {
         color,
-        lineWidth: 2,
+        lineWidth: 4,
         lineStyle: dashed ? 2 : 0, // 0 solid, 1 dotted, 2 dashed
         lastValueVisible: false,
         priceLineVisible: false,
@@ -274,15 +308,26 @@ const CandlestickChart = () => {
         hideTooltip();
         return;
       }
-      const hoveredTime = param.time;
-      const matchingTrade = annotations.find(trade => trade.time === hoveredTime);
+      if (param.hoveredObjectId) {        
+        const matchingTrade = annotations.find(trade => trade.id === param.hoveredObjectId);
 
-      if (matchingTrade) {
-        showTradeTooltip(matchingTrade, param.point.x, param.point.y);
-      } else {
-        hideTooltip();
+        if (matchingTrade) {
+          showTradeTooltip(matchingTrade, param.point.x, param.point.y);
+        } else {
+          hideTooltip();
+        }
+      }else hideTooltip();
+
+    });
+
+    chart.subscribeClick(param => {
+      if (!param || !param.time) return;
+      if (param.hoveredObjectId) {
+        const clickedTrade = annotations.find(trade => trade.id === param.hoveredObjectId);
+        if (clickedTrade) {
+          zoomAroundTrade(chart, data, clickedTrade);
+        }
       }
-      if (matchingTrade?.time !== param.time) hideTooltip()
     });
 
     window.addEventListener("resize", handleResize);
