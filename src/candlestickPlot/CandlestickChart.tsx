@@ -362,6 +362,13 @@ const CandlestickChart = () => {
             className="hidden"
           />
         </label>
+        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Reset Zoom
+          <button
+            onClick={() => chartApiRef.current?.timeScale().fitContent()}
+            className="hidden"
+          />
+        </label>
       </div>
       <div
         id="container"

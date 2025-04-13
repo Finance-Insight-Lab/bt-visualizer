@@ -22,7 +22,7 @@ interface EquityDataRaw {
 
 const EquityChart = () => {
   const chartRef = useRef<HTMLDivElement>(null);
-  const chartApiRef = useRef<IChartApi>();
+  const chartApiRef = useRef<IChartApi>(null);
   const [equityCurve, setEquityCurve] = useState<EquityData[]>([]);
   const [stats, setStats] = useState<TradeStats>();
   const [width, setWidth] = useState(window.innerWidth);
@@ -153,6 +153,13 @@ const EquityChart = () => {
           />
         </label>
         <TradeStatsCard stats={stats} />
+        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Reset Zoom
+          <button
+            onClick={() => chartApiRef.current?.timeScale().fitContent()}
+            className="hidden"
+          />
+        </label>
       </div>
 
       <div
