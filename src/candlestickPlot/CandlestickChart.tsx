@@ -30,6 +30,15 @@ interface TradeMarker {
   color: string;
   position: string;
   shape: string;
+  tradeId: number;
+  tradeType: string;
+  entryPrice: string;
+  exitPrice: string;
+  Size: string;
+  PnL: string;
+  TP: string | null;
+  SL: string | null;
+  ReturnPct: string;
 }
 
 interface TradeLine {
@@ -92,6 +101,11 @@ const CandlestickChart = () => {
           EntryPrice: string;
           ExitPrice: string;
           Type: string;
+          Size: string;
+          PnL: string;
+          TP: string | null;
+          SL: string | null;
+          ReturnPct: string;
         }[];
 
         const allTradeLines = parsedTrades.map((trade) => ({
@@ -114,7 +128,15 @@ const CandlestickChart = () => {
           color: trade.Type === "B" ? "green" : "red",
           position: trade.Type === "B" ? "belowBar" : "aboveBar",
           shape: trade.Type === "B" ? "arrowUp" : "arrowDown",
-          text: "trade info",
+          tradeId: trade.Id,
+          entryPrice: trade.EntryPrice,
+          exitPrice: trade.ExitPrice,
+          tradeType: trade.Type === "B" ? "Buy" : "Sell",
+          Size: trade.Size,
+          PnL: trade.PnL,
+          TP: trade.TP,
+          SL: trade.SL,
+          ReturnPct: trade.ReturnPct,
         }));
 
         setTradeLines(allTradeLines);
@@ -122,6 +144,64 @@ const CandlestickChart = () => {
       },
     });
   };
+
+  const createTooltip = () => {
+    const container = document.getElementById('container');
+    if (!container) return;
+  
+    const tooltip = document.createElement('div');
+    tooltip.id = 'trade-tooltip';
+    tooltip.style.cssText = `
+      width: 160px;
+      min-height: 80px;
+      position: absolute;
+      display: none;
+      padding: 8px;
+      box-sizing: border-box;
+      font-size: 12px;
+      text-align: left;
+      z-index: 1000;
+      pointer-events: none;
+      border: 1px solid rgb(224, 224, 224);
+      border-radius: 2px;
+      background: black;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    `;
+    container.appendChild(tooltip);
+  };  
+
+  const showTradeTooltip = (trade: TradeMarker, x: number, y: number) => {
+    const tooltip = document.getElementById("trade-tooltip");
+    const container = document.getElementById("container");
+    if (!tooltip || !container) return;
+  
+    const rect = container.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + x + 10}px`;
+    tooltip.style.top = `${rect.top + y + 10}px`;
+    tooltip.style.display = "block";
+  
+    tooltip.innerHTML = `
+      <strong>${trade.tradeType.toUpperCase()}</strong><br/>
+      ID: ${trade.tradeId}<br/>
+      Entry Price: ${trade.entryPrice}<br/>
+      Exit Price: ${trade.exitPrice}<br/>
+      Size: ${trade.Size}<br/>
+      PnL: ${trade.PnL}<br/>
+      TP: ${trade.TP}<br/>
+      SL: ${trade.SL}<br/>
+      ReturnPct: ${trade.ReturnPct}<br/>
+    `;
+  };
+
+  const hideTooltip = () => {
+    const tooltip = document.getElementById("trade-tooltip");
+    if (tooltip) {
+      tooltip.style.display = "none";
+    }
+  };  
 
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
@@ -147,6 +227,7 @@ const CandlestickChart = () => {
       },
     });
     chart.timeScale().fitContent();
+    createTooltip()
 
     chartApiRef.current = chart;
 
@@ -187,6 +268,23 @@ const CandlestickChart = () => {
 
     createSeriesMarkers(candleSeries, annotations);
 
+    chart.subscribeCrosshairMove(param => {
+      // Hide if we're outside of chart
+      if (!param || !param.time || !param.point || !param.seriesData) {
+        hideTooltip();
+        return;
+      }
+      const hoveredTime = param.time;
+      const matchingTrade = annotations.find(trade => trade.time === hoveredTime);
+
+      if (matchingTrade) {
+        showTradeTooltip(matchingTrade, param.point.x, param.point.y);
+      } else {
+        hideTooltip();
+      }
+      if (matchingTrade?.time !== param.time) hideTooltip()
+    });
+
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -221,6 +319,7 @@ const CandlestickChart = () => {
         </label>
       </div>
       <div
+        id="container"
         ref={chartRef}
         style={{ width: "100%", height: "500px", marginTop: "20px" }}
       />
