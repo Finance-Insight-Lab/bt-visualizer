@@ -50,6 +50,7 @@ const EquityChart = () => {
         setEquityCurve(formattedData);
       },
     });
+    event.target.value = '';
   };
 
   const sanitizeKey = (key: string): string => {
@@ -79,6 +80,7 @@ const EquityChart = () => {
         setStats(parsed);
       },
     });
+    event.target.value = '';
   };
 
   useEffect(() => {
@@ -152,10 +154,20 @@ const EquityChart = () => {
             className="hidden"
           />
         </label>
-        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
-          Reset Zoom
+        <label className="cursor-pointer text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Reset Zoom 🔍
           <button
             onClick={() => chartApiRef.current?.timeScale().fitContent()}
+            className="hidden"
+          />
+        </label>
+        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Reset Data
+          <button
+            onClick={() => {
+              setEquityCurve([])
+              setStats(undefined)
+            }}
             className="hidden"
           />
         </label>

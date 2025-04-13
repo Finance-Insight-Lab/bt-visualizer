@@ -89,6 +89,7 @@ const CandlestickChart = () => {
         setData(formattedData);
       },
     });
+    event.target.value = '';
   };
 
   const handleTradesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,6 +152,7 @@ const CandlestickChart = () => {
         setAnnotations(entryAnnotations);
       },
     });
+    event.target.value = '';
   };
 
   const createTooltip = () => {
@@ -362,10 +364,21 @@ const CandlestickChart = () => {
             className="hidden"
           />
         </label>
-        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
-          Reset Zoom
+        <label className="cursor-pointer text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Reset Zoom 🔍
           <button
             onClick={() => chartApiRef.current?.timeScale().fitContent()}
+            className="hidden"
+          />
+        </label>
+        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Reset Data
+          <button
+            onClick={() => {
+              setData([])
+              setAnnotations([])
+              setTradeLines([])
+            }}
             className="hidden"
           />
         </label>
