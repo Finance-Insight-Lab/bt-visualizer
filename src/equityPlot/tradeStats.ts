@@ -28,6 +28,4 @@ export interface TradeStats {
   Expectancy: string;
   SQN: string;
   _strategy: string;
-  _equity_curve: string;
-  _trades: string;
 }

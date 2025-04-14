@@ -15,11 +15,6 @@ interface EquityData {
   value: number;
 }
 
-interface EquityDataRaw {
-  equity: string;
-  time: string;
-}
-
 const EquityChart = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartApiRef = useRef<IChartApi>(null);
@@ -32,6 +27,10 @@ const EquityChart = () => {
     return (localDate.getTime() / 1000) as UTCTimestamp;
   };
 
+  const findKey = (row: Record<string, any>, target: string): string => {
+    return Object.keys(row).find((key) => key.trim().toLowerCase() === target.toLowerCase()) || '';
+  };
+
   const handleEquityUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -40,13 +39,17 @@ const EquityChart = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result: any) => {
-        const parsedData = result.data as EquityDataRaw[];
+        const parsedData = result.data as Record<string, string>[];
+  
+        const formattedData: EquityData[] = parsedData.map((row) => {
+          const keys = Object.keys(row);
+          const timeKey = keys.find((key) => key.trim().toLowerCase() === 'time') || keys[0];
 
-        const formattedData: EquityData[] = parsedData.map((row) => ({
-          time: parseDatetime(row.time),
-          value: parseFloat(row.equity),
-        }));
-
+          return {
+            time: parseDatetime(row[timeKey]),
+            value: parseFloat(row[findKey(row, 'Equity')] || '0'),
+          };
+        });
         setEquityCurve(formattedData);
       },
     });
@@ -70,10 +73,13 @@ const EquityChart = () => {
       complete: (results: any) => {
         const raw_data = results.data as string[][];
         const parsed: any = {};
-
+        const exclude_keys = ['_equity_curve', '_trades'];
         raw_data.forEach(([key, value]) => {
           if (key && value) {
-            parsed[sanitizeKey(key)] = value.trim();
+            const sanitizedKey = sanitizeKey(key)
+            if (!exclude_keys.find((key) => key === sanitizedKey)) {
+              parsed[sanitizeKey(key)] = value.trim();
+            }
           }
         });
 

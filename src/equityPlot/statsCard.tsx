@@ -34,7 +34,7 @@ const TradeStatsCard: React.FC<Props> = ({ stats }) => {
       </div>
 
       {/* Full Tooltip on Hover */}
-      <div className="absolute z-10 top-full mt-2 left-0 hidden group-hover:flex flex-col bg-white rounded-md shadow-lg border p-4 max-w-xs text-xs">
+      <div className="absolute z-10 top-full mt-0 left-0 hidden group-hover:flex flex-col bg-white rounded-md shadow-lg border p-4 max-w-xs text-xs">
         {Object.entries(stats).map(([key, value]) => (
           <div
             key={key}
