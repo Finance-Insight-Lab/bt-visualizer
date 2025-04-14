@@ -60,6 +60,11 @@ interface TradeLine {
   dashed: boolean;
 }
 
+interface precisionPrice {
+  minMove : number,
+  precision: number,
+}
+
 const CandlestickChart = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartApiRef = useRef<IChartApi>(null);
@@ -265,6 +270,36 @@ const CandlestickChart = () => {
     });
   };
 
+  const getPrecision = (value: number): precisionPrice => {
+    const valueStr = value.toString();
+  
+    if (!valueStr.includes('.')) {
+      return {
+        minMove : 1,
+        precision: 1,
+      };
+    };
+  
+    const decimalPlaces = valueStr.split('.')[1].length;
+    return {
+      minMove : Math.pow(10, -decimalPlaces),
+      precision: decimalPlaces,
+    }
+  };
+  
+  const getRandomPrecisionFromData = (data: CandlestickData[]): precisionPrice => {
+    if (data.length === 0) {
+      return {
+        minMove : 1,
+        precision: 1,
+      };
+    };
+
+    const randomRow = data[Math.floor(Math.random() * data.length)];
+    const sampleValue = randomRow.close;
+    return getPrecision(sampleValue);
+  };
+
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -293,6 +328,8 @@ const CandlestickChart = () => {
 
     chartApiRef.current = chart;
 
+    const precisionInfo = getRandomPrecisionFromData(data)
+
     const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: "#4caf50",
       downColor: "#f44336",
@@ -303,8 +340,8 @@ const CandlestickChart = () => {
       lastValueVisible: false,
       priceFormat: {
         type: "price",
-        precision: 5,
-        minMove: 0.00001,
+        precision: precisionInfo.precision,
+        minMove: precisionInfo.minMove,
       },
     });
     candleSeries.setData(data);
