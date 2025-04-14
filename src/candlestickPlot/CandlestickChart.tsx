@@ -77,10 +77,7 @@ const CandlestickChart = () => {
     return Object.keys(row).find((key) => key.trim().toLowerCase() === target.toLowerCase()) || '';
   };
 
-  const handleOHLCUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const parseOhlc = (file: File | string) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -102,13 +99,16 @@ const CandlestickChart = () => {
         setData(formattedData);
       },
     });
+  }
+
+  const handleOHLCUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    parseOhlc(file);
     event.target.value = '';
   };
 
-  const handleTradesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const parseTrades = (file: File | string) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -172,6 +172,12 @@ const CandlestickChart = () => {
         setAnnotations(entryAnnotations);
       },
     });
+  }
+
+  const handleTradesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    parseTrades(file);
     event.target.value = '';
   };
 
@@ -365,6 +371,19 @@ const CandlestickChart = () => {
       chart.remove();
     };
   }, [data, tradeLines]);
+
+  useEffect(() => {
+    fetch('/ohlc.csv')
+      .then((res) => res.text())
+      .then((text) => {
+        parseOhlc(text);
+      });
+    fetch('/trades.csv')
+      .then((res) => res.text())
+      .then((text) => {
+        parseTrades(text);
+      });
+  }, []);
 
   return (
     <>

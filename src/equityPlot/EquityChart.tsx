@@ -31,10 +31,7 @@ const EquityChart = () => {
     return Object.keys(row).find((key) => key.trim().toLowerCase() === target.toLowerCase()) || '';
   };
 
-  const handleEquityUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const parseEquity = (file: File | string) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -53,6 +50,12 @@ const EquityChart = () => {
         setEquityCurve(formattedData);
       },
     });
+  }
+
+  const handleEquityUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    parseEquity(file);
     event.target.value = '';
   };
 
@@ -64,10 +67,7 @@ const EquityChart = () => {
       .replace(/[^a-zA-Z0-9_]/g, ""); // Remove any other non-alphanum/underscore
   };
 
-  const handleStatsUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const parseStats = (file: File | string) => {
     Papa.parse(file, {
       skipEmptyLines: true,
       complete: (results: any) => {
@@ -86,6 +86,12 @@ const EquityChart = () => {
         setStats(parsed);
       },
     });
+  }
+
+  const handleStatsUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    parseStats(file);
     event.target.value = '';
   };
 
@@ -142,6 +148,19 @@ const EquityChart = () => {
       chart.remove();
     };
   }, [equityCurve, stats]);
+
+    useEffect(() => {
+      fetch('/equity_curve.csv')
+        .then((res) => res.text())
+        .then((text) => {
+          parseEquity(text);
+        });
+      fetch('/stats.csv')
+        .then((res) => res.text())
+        .then((text) => {
+          parseStats(text);
+        });
+    }, []);
 
   return (
     <>
