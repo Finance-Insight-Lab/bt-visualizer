@@ -410,12 +410,12 @@ const CandlestickChart = () => {
   }, [data, tradeLines]);
 
   useEffect(() => {
-    fetch('/ohlc.csv')
+    fetch('/bt-visualizer/ohlc.csv')
       .then((res) => res.text())
       .then((text) => {
         parseOhlc(text);
       });
-    fetch('/trades.csv')
+    fetch('/bt-visualizer/trades.csv')
       .then((res) => res.text())
       .then((text) => {
         parseTrades(text);

@@ -5,13 +5,12 @@ import EquityChart from "./equityPlot/EquityChart";
 const App: React.FC = () => {
   return (
     <div>
-
       <div className="relative flex items-center justify-between px-4 py-4">
         <h1 className="absolute left-1/2 transform -translate-x-1/2 text-5xl font-bold">
           Backtest Visualizer
         </h1>
         <a
-          href="https://github.com/Finance-Insight-Labs/bt-visualizer"
+          href="https://github.com/Finance-Insight-Lab/bt-visualizer"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-gray-700 hover:text-black"
