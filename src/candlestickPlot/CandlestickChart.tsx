@@ -17,12 +17,17 @@ interface CandlestickData {
   time: UTCTimestamp;
 }
 
-interface CandlestickDataRaw {
-  open: string;
-  high: string;
-  low: string;
-  close: string;
-  time: string;
+interface TradeData {
+  Id: string;
+  EntryTime: UTCTimestamp;
+  ExitTime: UTCTimestamp;
+  EntryPrice: number;
+  ExitPrice: number;
+  Size: number;
+  PnL: string;
+  TP: string | null;
+  SL: string | null;
+  ReturnPct: string;
 }
 
 type markerPosition = "belowBar" | "aboveBar";
@@ -37,9 +42,9 @@ interface TradeMarker {
   shape: markerShape;
   id: string;
   tradeType: string;
-  entryPrice: string;
-  exitPrice: string;
-  Size: string;
+  entryPrice: number;
+  exitPrice: number;
+  Size: number;
   PnL: string;
   TP: string | null;
   SL: string | null;
@@ -68,6 +73,10 @@ const CandlestickChart = () => {
     return (localDate.getTime() / 1000) as UTCTimestamp;
   };
 
+  const findKey = (row: Record<string, any>, target: string): string => {
+    return Object.keys(row).find((key) => key.trim().toLowerCase() === target.toLowerCase()) || '';
+  };
+
   const handleOHLCUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -76,16 +85,20 @@ const CandlestickChart = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result: any) => {
-        const parsedData = result.data as CandlestickDataRaw[];
+        const parsedData = result.data as Record<string, string>[];
+  
+        const formattedData: CandlestickData[] = parsedData.map((row) => {
+          const keys = Object.keys(row);
+          const timeKey = keys.find((key) => key.trim().toLowerCase() === 'time') || keys[0];
 
-        const formattedData: CandlestickData[] = parsedData.map((row) => ({
-          time: parseDatetime(row.time),
-          open: parseFloat(row.open),
-          high: parseFloat(row.high),
-          low: parseFloat(row.low),
-          close: parseFloat(row.close),
-        }));
-
+          return {
+            time: parseDatetime(row[timeKey]),
+            open: parseFloat(row[findKey(row, 'open')] || '0'),
+            high: parseFloat(row[findKey(row, 'high')] || '0'),
+            low: parseFloat(row[findKey(row, 'low')] || '0'),
+            close: parseFloat(row[findKey(row, 'close')] || '0'),
+          };
+        });
         setData(formattedData);
       },
     });
@@ -100,47 +113,54 @@ const CandlestickChart = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result: any) => {
-        const parsedTrades = result.data as {
-          Id: string;
-          EntryTime: string;
-          ExitTime: string;
-          EntryPrice: string;
-          ExitPrice: string;
-          Type: string;
-          Size: string;
-          PnL: string;
-          TP: string | null;
-          SL: string | null;
-          ReturnPct: string;
-        }[];
+        const parsedData = result.data as Record<string, string>[];
+
+        const parsedTrades: TradeData[] = parsedData.map((row) => {
+          const keys = Object.keys(row);
+          const idKey = keys.find((key) => key.trim().toLowerCase() === 'id') || keys[0];
+
+          return {
+            Id: row[idKey],
+            EntryTime: parseDatetime(row[findKey(row, 'EntryTime')]),
+            ExitTime: parseDatetime(row[findKey(row, 'ExitTime')]),
+            EntryPrice: parseFloat(row[findKey(row, 'EntryPrice')] || '0'),
+            ExitPrice: parseFloat(row[findKey(row, 'ExitPrice')] || '0'),
+            Type: row[findKey(row, 'Type')],
+            Size: parseFloat(row[findKey(row, 'Size')]),
+            PnL: row[findKey(row, 'PnL')],
+            TP: row[findKey(row, 'TP')],
+            SL: row[findKey(row, 'SL')],
+            ReturnPct: row[findKey(row, 'ReturnPct')],
+          };
+        });
 
         const allTradeLines = parsedTrades.map((trade) => ({
           data: [
             {
-              time: parseDatetime(trade.EntryTime),
-              value: parseFloat(trade.EntryPrice),
+              time: trade.EntryTime,
+              value: trade.EntryPrice,
             },
             {
-              time: parseDatetime(trade.ExitTime),
-              value: parseFloat(trade.ExitPrice),
+              time: trade.ExitTime,
+              value: trade.ExitPrice,
             },
           ],
-          color: trade.Type === "B" ? "green" : "red",
+          color: trade.Size > 0 ? "green" : "red",
           dashed: true,
         }));
 
         const entryAnnotations = parsedTrades.map((trade) => ({
-          time: parseDatetime(trade.EntryTime),
-          price: parseFloat(trade.EntryPrice),
-          exitTime: parseDatetime(trade.ExitTime),
+          time: trade.EntryTime,
+          price: trade.EntryPrice,
+          exitTime: trade.ExitTime,
           size: 1.5,
-          color: trade.Type === "B" ? "green" : "red",
-          position: trade.Type === "B" ? "belowBar" : "aboveBar" as markerPosition,
-          shape: trade.Type === "B" ? "arrowUp" : "arrowDown" as markerShape,
+          color: trade.Size > 0 ? "green" : "red",
+          position: trade.Size > 0 ? "belowBar" : "aboveBar" as markerPosition,
+          shape: trade.Size > 0 ? "arrowUp" : "arrowDown" as markerShape,
           id: trade.Id,
           entryPrice: trade.EntryPrice,
           exitPrice: trade.ExitPrice,
-          tradeType: trade.Type === "B" ? "Buy" : "Sell",
+          tradeType: trade.Size > 0 ? "Buy" : "Sell",
           Size: trade.Size,
           PnL: trade.PnL,
           TP: trade.TP,
