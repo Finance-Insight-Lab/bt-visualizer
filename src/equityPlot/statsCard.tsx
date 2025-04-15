@@ -15,18 +15,18 @@ const TradeStatsCard: React.FC<Props> = ({ stats }) => {
   ];
 
   return (
-    <div className="relative group w-fit text-xs">
+    <div className="relative group w-small sm:w-fit text-xs">
       {/* Visible Compact Summary */}
-      <div className="grid grid-cols-4 gap-3 bg-gray-100 text-gray-800 px-4 py-3 rounded-xl shadow-sm border border-gray-300">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 bg-gray-100 text-gray-800 px-2 sm:px-4 py-2 sm:py-3 rounded-xl shadow-sm border border-gray-300">
         {previewKeys.map((key) => (
           <div
             key={key}
             className="flex flex-col items-center justify-center text-center"
           >
-            <span className="text-gray-500 text-[10px] uppercase tracking-wide">
+            <span className="text-gray-500 text-[9px] sm:text-[10px] uppercase tracking-wide">
               {key}
             </span>
-            <span className="font-bold text-[13px] text-gray-900">
+            <span className="font-bold text-[12px] sm:text-[13px] text-gray-900">
               {stats[key]}
             </span>
           </div>
@@ -34,7 +34,7 @@ const TradeStatsCard: React.FC<Props> = ({ stats }) => {
       </div>
 
       {/* Full Tooltip on Hover */}
-      <div className="absolute z-10 top-full mt-0 left-0 hidden group-hover:flex flex-col bg-white rounded-md shadow-lg border p-4 max-w-xs text-xs">
+      <div className="absolute z-10 top-full mt-1 left-0 hidden group-hover:flex flex-col bg-white rounded-md shadow-lg border p-4 max-w-xs text-xs">
         {Object.entries(stats).map(([key, value]) => (
           <div
             key={key}

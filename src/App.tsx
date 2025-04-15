@@ -4,9 +4,9 @@ import EquityChart from "./equityPlot/EquityChart";
 
 const App: React.FC = () => {
   return (
-    <div>
-      <div className="relative flex items-center justify-between px-4 py-4">
-        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-5xl font-bold">
+    <div className="p-4">
+      <div className="relative flex items-center justify-between px-4 py-4 sm:flex-row flex-col gap-4 sm:gap-0">
+        <h1 className="text-3xl sm:text-5xl font-bold text-center sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
           Backtest Visualizer
         </h1>
         <a
@@ -27,6 +27,7 @@ const App: React.FC = () => {
           View on GitHub
         </a>
       </div>
+
       <EquityChart />
       <CandlestickChart />
     </div>

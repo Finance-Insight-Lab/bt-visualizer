@@ -125,7 +125,7 @@ const EquityChart = () => {
     chart.timeScale().fitContent();
 
     chart.subscribeDblClick((param) => {
-      if (!param || !param.time) return;
+      if (!param) return;
       chart.timeScale().fitContent();
     });
 
@@ -168,8 +168,8 @@ const EquityChart = () => {
 
   return (
     <>
-      <div className="flex justify-center items-center gap-4 flex-wrap framer-motion">
-        <label className="cursor-pointer text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+      <div className="flex justify-center items-center gap-2 sm:gap-4 flex-wrap framer-motion">
+        <label className="cursor-pointer text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-sm transition-colors">
           Upload Equity CSV
           <input
             type="file"
@@ -179,7 +179,7 @@ const EquityChart = () => {
           />
         </label>
 
-        <label className="cursor-pointer text-sm font-medium text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+        <label className="cursor-pointer text-xs sm:text-sm font-medium text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-sm transition-colors">
           Upload Stats CSV
           <input
             type="file"
@@ -188,7 +188,7 @@ const EquityChart = () => {
             className="hidden"
           />
         </label>
-        <label className="cursor-pointer text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors">
+        <label className="cursor-pointer text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-sm transition-colors">
           Reset Data
           <button
             onClick={() => {
