@@ -4,7 +4,7 @@ import EquityChart from "./equityPlot/EquityChart";
 
 const App: React.FC = () => {
   return (
-    <div className="p-4">
+    <div className="sm:p-0 p-4">
       <div className="relative flex items-center justify-between px-4 py-4 sm:flex-row flex-col gap-4 sm:gap-0">
         <h1 className="text-3xl sm:text-5xl font-bold text-center sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
           Backtest Visualizer
