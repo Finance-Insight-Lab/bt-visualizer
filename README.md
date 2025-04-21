@@ -1,9 +1,29 @@
-# bt-visualizer
+# Backtest Visualization Tool
 
-**Important features:**
+A lightweight, interactive charting tool to visualize your backtest results with trade annotations, zoom support, tooltips, and more.
 
-0. Interactive one page panel.
-1. Uses react and typescript to plot the chart.
-2. Potential integration with LLMs for better interaction to re-draw chart.
-3. A host for playing with some sample data.
-4. contains recorded video of how it works in intro page.
+
+---
+
+## Features
+
+- 🕵️ Hover to see trade info
+- 🖱️ Click to zoom into a trade
+- 🔍 Zoom / pan support
+- 🖱️ Double click on chart to zoom out
+- 🔄 Reset chart and data and plot new data
+- 📦 Simple integration (comming soon)
+
+---
+
+## 🛠️ Getting Started
+
+1. Clone the repo:
+
+```bash
+git clone https://github.com/Finance-Insight-Lab/bt-visualizer.git
+cd bt-visualizer
+
+npm install
+npm run dev
+```
