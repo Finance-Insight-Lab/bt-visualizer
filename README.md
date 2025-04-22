@@ -3,6 +3,8 @@
 A lightweight, interactive charting tool to visualize your backtest results with trade annotations, zoom support, tooltips, and more.
 
 
+https://github.com/user-attachments/assets/df64633e-7e28-4a82-b4da-9640e7d01b62
+
 ---
 
 ## Features
