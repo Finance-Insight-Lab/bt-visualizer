@@ -14,13 +14,10 @@ https://github.com/user-attachments/assets/df64633e-7e28-4a82-b4da-9640e7d01b62
 - 🔍 Zoom / pan support
 - 🖱️ Double click on chart to zoom out
 - 🔄 Reset chart and data and plot new data
-- 📦 Simple integration (comming soon)
 
 ---
 
 ## 🛠️ Getting Started
-
-1. Clone the repo:
 
 ```bash
 git clone https://github.com/Finance-Insight-Lab/bt-visualizer.git
@@ -29,3 +26,10 @@ cd bt-visualizer
 npm install
 npm run dev
 ```
+Or simply use the [deployed version of app](https://finance-insight-lab.github.io/bt-visualizer/)
+
+---
+
+## 📂 Standard Input
+For style of files to upload, consider [these samples](/public) which follow
+[backtesting.py](https://github.com/kernc/backtesting.py) input and output styles.
