@@ -65,7 +65,12 @@ interface precisionPrice {
   precision: number,
 }
 
-const CandlestickChart = () => {
+type EquityChartProps = {
+  ohlcFile: string;
+  tradesFile: string;
+};
+
+const CandlestickChart: React.FC<EquityChartProps> = ({ ohlcFile, tradesFile }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartApiRef = useRef<IChartApi>(null);
   const [data, setData] = useState<CandlestickData[]>([]);
@@ -410,12 +415,12 @@ const CandlestickChart = () => {
   }, [data, tradeLines]);
 
   useEffect(() => {
-    fetch('/bt-visualizer/ohlc.csv')
+    fetch(ohlcFile)
       .then((res) => res.text())
       .then((text) => {
         parseOhlc(text);
       });
-    fetch('/bt-visualizer/trades.csv')
+    fetch(tradesFile)
       .then((res) => res.text())
       .then((text) => {
         parseTrades(text);

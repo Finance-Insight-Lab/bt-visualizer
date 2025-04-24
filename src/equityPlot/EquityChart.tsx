@@ -14,7 +14,12 @@ interface EquityData {
   value: number;
 }
 
-const EquityChart = () => {
+type EquityChartProps = {
+  equityFile: string;
+  statsFile: string;
+};
+
+const EquityChart: React.FC<EquityChartProps> = ({ equityFile, statsFile }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartApiRef = useRef<IChartApi>(null);
   const [equityCurve, setEquityCurve] = useState<EquityData[]>([]);
@@ -154,12 +159,12 @@ const EquityChart = () => {
   }, [equityCurve, stats]);
 
   useEffect(() => {
-    fetch("/bt-visualizer/equity_curve.csv")
+    fetch(equityFile)
       .then((res) => res.text())
       .then((text) => {
         parseEquity(text);
       });
-    fetch("/bt-visualizer/stats.csv")
+    fetch(statsFile)
       .then((res) => res.text())
       .then((text) => {
         parseStats(text);

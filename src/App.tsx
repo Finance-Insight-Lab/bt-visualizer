@@ -2,7 +2,16 @@ import React from "react";
 import CandlestickChart from "./candlestickPlot/CandlestickChart";
 import EquityChart from "./equityPlot/EquityChart";
 
-const App: React.FC = () => {
+type AppProps = {
+  equity: string;
+  stats: string;
+  ohlc: string;
+  trades: string;
+};
+
+const App: React.FC<AppProps> = (props) => {
+  const { equity, stats, ohlc, trades } = props;
+
   return (
     <div className="sm:p-0 p-4">
       <div className="relative flex items-center justify-between px-4 py-4 sm:flex-row flex-col gap-4 sm:gap-0">
@@ -28,8 +37,8 @@ const App: React.FC = () => {
         </a>
       </div>
 
-      <EquityChart />
-      <CandlestickChart />
+      <EquityChart equityFile={equity} statsFile={stats} />
+      <CandlestickChart ohlcFile={ohlc} tradesFile={trades}  />
     </div>
   );
 };
