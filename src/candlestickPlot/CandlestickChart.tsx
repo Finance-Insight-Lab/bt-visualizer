@@ -414,17 +414,30 @@ const CandlestickChart: React.FC<EquityChartProps> = ({ ohlcFile, tradesFile }) 
     };
   }, [data, tradeLines]);
 
+  function isProbablyUrl(path: string): boolean {
+    return path.startsWith("http") || path.startsWith("/") || path.endsWith(".csv");
+  }
+  
   useEffect(() => {
-    fetch(ohlcFile)
-      .then((res) => res.text())
-      .then((text) => {
-        parseOhlc(text);
-      });
-    fetch(tradesFile)
-      .then((res) => res.text())
-      .then((text) => {
-        parseTrades(text);
-      });
+    if (ohlcFile) {
+      if (isProbablyUrl(ohlcFile)) {
+        fetch(ohlcFile)
+          .then((res) => res.text())
+          .then((text) => parseOhlc(text));
+      } else {
+        parseOhlc(ohlcFile);
+      }
+    }
+  
+    if (tradesFile) {
+      if (isProbablyUrl(tradesFile)) {
+        fetch(tradesFile)
+          .then((res) => res.text())
+          .then((text) => parseTrades(text));
+      } else {
+        parseTrades(tradesFile);
+      }
+    }
   }, []);
 
   return (

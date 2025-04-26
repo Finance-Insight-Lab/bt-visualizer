@@ -10,10 +10,10 @@ export default defineConfig({
   // },
   // build: {
   //   lib: {
-  //     entry: 'src/index.ts',
+  //     entry: 'src/index.tsx',
   //     name: 'BtVisualizer',
-  //     formats: ['iife'],
-  //     fileName: 'bt-visualizer',
+  //     formats: ['iife',],
+  //     fileName: () => `bt-visualizer.js`
   //   },
   // },
 })

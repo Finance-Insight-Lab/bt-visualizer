@@ -158,17 +158,30 @@ const EquityChart: React.FC<EquityChartProps> = ({ equityFile, statsFile }) => {
     };
   }, [equityCurve, stats]);
 
+  function isProbablyUrl(path: string): boolean {
+    return path.startsWith("http") || path.startsWith("/") || path.endsWith(".csv");
+  }
+  
   useEffect(() => {
-    fetch(equityFile)
-      .then((res) => res.text())
-      .then((text) => {
-        parseEquity(text);
-      });
-    fetch(statsFile)
-      .then((res) => res.text())
-      .then((text) => {
-        parseStats(text);
-      });
+    if (equityFile) {
+      if (isProbablyUrl(equityFile)) {
+        fetch(equityFile)
+          .then((res) => res.text())
+          .then((text) => parseEquity(text));
+      } else {
+        parseEquity(equityFile);
+      }
+    }
+  
+    if (statsFile) {
+      if (isProbablyUrl(statsFile)) {
+        fetch(statsFile)
+          .then((res) => res.text())
+          .then((text) => parseStats(text));
+      } else {
+        parseStats(statsFile);
+      }
+    }
   }, []);
 
   return (
