@@ -78,6 +78,12 @@ const CandlestickChart: React.FC<EquityChartProps> = ({ ohlcFile, tradesFile }) 
   const [tradeLines, setTradeLines] = useState<TradeLine[]>([]);
   const [width, setWidth] = useState(window.innerWidth);
 
+  let lastMousePos = { x: 0, y: 0 };
+  window.addEventListener('mousemove', e => {
+    lastMousePos.x = e.clientX;
+    lastMousePos.y = e.clientY;
+  });
+  
   const parseDatetime = (datetime: string): UTCTimestamp => {
     const localDate = new Date(datetime);
     return (localDate.getTime() / 1000) as UTCTimestamp;
@@ -192,9 +198,6 @@ const CandlestickChart: React.FC<EquityChartProps> = ({ ohlcFile, tradesFile }) 
   };
 
   const createTooltip = () => {
-    const container = document.getElementById('container');
-    if (!container) return;
-  
     const tooltip = document.createElement('div');
     tooltip.id = 'trade-tooltip';
     tooltip.style.cssText = `
@@ -216,17 +219,15 @@ const CandlestickChart: React.FC<EquityChartProps> = ({ ohlcFile, tradesFile }) 
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     `;
-    container.appendChild(tooltip);
-  };  
+    document.body.appendChild(tooltip);
+  };
 
   const showTradeTooltip = (trade: TradeMarker, x: number, y: number) => {
     const tooltip = document.getElementById("trade-tooltip");
-    const container = document.getElementById("container");
-    if (!tooltip || !container) return;
+    if (!tooltip) return;
   
-    const rect = container.getBoundingClientRect();
-    tooltip.style.left = `${rect.left + x + 10}px`;
-    tooltip.style.top = `${rect.top + y + 10}px`;
+    tooltip.style.left = `${x + 10}px`;
+    tooltip.style.top = `${y + 10}px`;
     tooltip.style.display = "block";
   
     tooltip.innerHTML = `
@@ -382,7 +383,7 @@ const CandlestickChart: React.FC<EquityChartProps> = ({ ohlcFile, tradesFile }) 
         const matchingTrade = annotations.find(trade => trade.id === param.hoveredObjectId);
 
         if (matchingTrade) {
-          showTradeTooltip(matchingTrade, param.point.x, param.point.y);
+          showTradeTooltip(matchingTrade, lastMousePos.x, lastMousePos.y);
         } else {
           hideTooltip();
         }

@@ -1,4 +1,5 @@
 import "./index.css";
+import css from "./index.css?inline";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
@@ -12,12 +13,9 @@ class BtVisualizer extends HTMLElement {
 
     const shadowRoot = this.attachShadow({ mode: "open" });
 
-    // Inject CSS file into shadow DOM
-    const linkEl = document.createElement("link");
-    linkEl.setAttribute("rel", "stylesheet");
-    linkEl.setAttribute("href", new URL("./bt-visualizer.css", import.meta.url).toString());
-
-    shadowRoot.appendChild(linkEl);
+    const styleEl = document.createElement("style");
+    styleEl.textContent = css;
+    shadowRoot.appendChild(styleEl);
     shadowRoot.appendChild(this.mountPoint);
   }
 
@@ -44,9 +42,7 @@ class BtVisualizer extends HTMLElement {
   
   async loadData(input: string): Promise<string> {
     if (input.trim().startsWith("http") || input.trim().startsWith("./")) {
-      const response = await fetch(input, {
-        mode: 'no-cors'
-      });
+      const response = await fetch(input);
       return await response.text();
     }
     return input;
