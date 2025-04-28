@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bt-visualizer"
-version = "0.2.0"
+version = "0.2.3"
 readme = "README.md"
 description = "Backtest visualization widget for JupyterLab"
 authors = [{ name="Ali Gheshlaghi", email="aliigheshlaghi97@email.com" }]
@@ -20,3 +20,7 @@ where = ["."]
 
 [tool.setuptools.package-data]
 "bt_visualizer" = ["bt-visualizer.js", "bt-visualizer.css"]
+
+[project.urls]
+Homepage = "https://finance-insight-lab.github.io/bt-visualizer/"
+Repository = "https://github.com/Finance-Insight-Lab/bt-visualizer"
