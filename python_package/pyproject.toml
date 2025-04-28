@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bt-visualizer"
-version = "0.1.5"
+version = "0.2.0"
 readme = "README.md"
 description = "Backtest visualization widget for JupyterLab"
 authors = [{ name="Ali Gheshlaghi", email="aliigheshlaghi97@email.com" }]
 license = { text = "MIT" }
 dependencies = [
-    "anywidget",
-    "traitlets",
-    "IPython"
+    "anywidget>=0.9,<1.0",
+    "traitlets>=5.9,<6.0",
+    "IPython>=8.12,<9.0"
 ]
 
 [tool.setuptools.packages.find]
