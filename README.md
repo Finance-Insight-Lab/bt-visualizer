@@ -1,7 +1,7 @@
 #  📈 Backtest Visualization Tool — bt-visualizer
+[![Total downloads](https://img.shields.io/pepy/dt/bt-visualizer?style=for-the-badge&color=green)](https://pypistats.org/packages/bt-visualizer)
 
 A lightweight, interactive charting tool to visualize your backtest results inside **JupyterLab**, with trade annotations, zoom support, tooltips, and more.
-
 
 https://github.com/user-attachments/assets/df64633e-7e28-4a82-b4da-9640e7d01b62
 
